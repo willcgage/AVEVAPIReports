@@ -1,0 +1,46 @@
+@page
+@model PiReports.Web.Pages.Runs.IndexModel
+@{
+    ViewData["Title"] = Model.DefinitionName is null ? "Run history" : $"Run history: {Model.DefinitionName}";
+}
+<h1>@ViewData["Title"]</h1>
+@if (Model.DefinitionName is not null)
+{
+    <p><a asp-page="/Runs/Index">Show all captures</a></p>
+}
+
+@if (Model.Runs.Count == 0)
+{
+    <p class="empty">No runs yet.</p>
+}
+else
+{
+    <table>
+        <thead>
+        <tr><th>Started</th><th>Capture</th><th>Trigger</th><th>Status</th><th>Duration</th><th>Output</th><th>Details</th></tr>
+        </thead>
+        <tbody>
+        @foreach (var run in Model.Runs)
+        {
+            <tr>
+                <td>@run.StartedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@run.Definition?.Name</td>
+                <td>@run.Trigger@(run.RequestedBy is { } who ? $" by {who}" : "")</td>
+                <td><partial name="_RunStatus" model="run"/></td>
+                <td>@(run.FinishedAt is { } f ? $"{(f - run.StartedAt).TotalSeconds:0}s" : "running")</td>
+                <td>
+                    @if (run.OutputPath is not null)
+                    {
+                        <a href="~/runs/@run.Id/download">@run.FileName</a>
+                        <span class="muted">@($"{(run.OutputBytes ?? 0) / 1024.0:0} KB")</span>
+                    }
+                </td>
+                <td class="details">
+                    @if (run.Error is not null) { <pre class="error">@run.Error</pre> }
+                    @if (run.Warnings is not null) { <pre>@run.Warnings</pre> }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

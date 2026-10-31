@@ -1,0 +1,62 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Captures";
+}
+<div class="title-row">
+    <h1>Captures</h1>
+    @if (Model.IsAdmin)
+    {
+        <a class="button" asp-page="/Captures/Edit">New capture</a>
+    }
+</div>
+
+@if (Model.Rows.Count == 0)
+{
+    <p class="empty">No captures yet. A capture opens a PI Vision display on a schedule and sends it as a PDF or PNG by email or to a shared folder.</p>
+}
+else
+{
+    <table>
+        <thead>
+        <tr><th>Name</th><th>Format</th><th>Schedule</th><th>Next run</th><th>Last run</th><th>Delivers to</th><th></th></tr>
+        </thead>
+        <tbody>
+        @foreach (var row in Model.Rows)
+        {
+            var d = row.Definition;
+            <tr class="@(d.Enabled ? "" : "disabled")">
+                <td><strong>@d.Name</strong>@if (!d.Enabled) { <span class="tag">disabled</span> }</td>
+                <td>@d.Format</td>
+                <td><code>@(string.IsNullOrWhiteSpace(d.Cron) ? "on demand" : d.Cron)</code></td>
+                <td>@(row.NextRun?.ToString("yyyy-MM-dd HH:mm") ?? "–")</td>
+                <td>
+                    @if (row.LastRun is { } last)
+                    {
+                        <partial name="_RunStatus" model="last"/>
+                        <span class="muted">@last.StartedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</span>
+                    }
+                    else
+                    {
+                        <span class="muted">never</span>
+                    }
+                </td>
+                <td>
+                    @if (!string.IsNullOrWhiteSpace(d.EmailRecipients)) { <span class="tag">email</span> }
+                    @if (!string.IsNullOrWhiteSpace(d.SharePath)) { <span class="tag">share</span> }
+                </td>
+                <td class="actions">
+                    <a asp-page="/Runs/Index" asp-route-definitionId="@d.Id">History</a>
+                    @if (Model.IsAdmin)
+                    {
+                        <a asp-page="/Captures/Edit" asp-route-id="@d.Id">Edit</a>
+                        <form method="post" asp-page-handler="RunNow" asp-route-id="@d.Id" class="inline">
+                            <button type="submit" class="link">Run now</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

@@ -1,0 +1,45 @@
+@inject Microsoft.Extensions.Options.IOptions<PiReports.Core.PiReportsOptions> ReportOptions
+@{
+    var env = ReportOptions.Value;
+}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@(env.EnvironmentLabel is { Length: > 0 } l ? $"[{l}] " : "")@ViewData["Title"] · PI Reports</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true">
+</head>
+<body>
+@if (env.EnvironmentLabel is { Length: > 0 } label)
+{
+    <div class="env-banner">
+        <strong>@label</strong>
+        @if (env.EmailRedirectTo is { Length: > 0 } redirect) { <span>· all email goes to @redirect</span> }
+        @if (env.ShareRedirectRoot is { Length: > 0 } shareRoot) { <span>· shared-folder files go under @shareRoot</span> }
+    </div>
+}
+<header>
+    <a class="brand" asp-page="/Index">PI Reports</a>
+    <nav>
+        <a asp-page="/Index">Captures</a>
+        <a asp-page="/Runs/Index">Run history</a>
+        <a asp-page="/Captures/Transfer">Export / import</a>
+        <a asp-page="/Settings/Email">Email settings</a>
+        <a href="~/jobs">Jobs</a>
+    </nav>
+    <span class="user">@User.DisplayName()</span>
+</header>
+<main>
+    @if (TempData["Message"] is string message)
+    {
+        <div class="flash">@message</div>
+    }
+    @if (TempData["Error"] is string error)
+    {
+        <div class="flash error">@error</div>
+    }
+    @RenderBody()
+</main>
+</body>
+</html>

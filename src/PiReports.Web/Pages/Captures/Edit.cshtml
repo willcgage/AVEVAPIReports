@@ -1,0 +1,86 @@
+@page "{id:int?}"
+@model PiReports.Web.Pages.Captures.EditModel
+@{
+    ViewData["Title"] = Model.IsNew ? "New capture" : $"Edit {Model.Input.Name}";
+}
+<h1>@ViewData["Title"]</h1>
+
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="flash error"></div>
+
+    <fieldset>
+        <legend>Display</legend>
+        <label>Name <input asp-for="Input.Name" required maxlength="200"></label>
+        <span asp-validation-for="Input.Name" class="field-error"></span>
+        <label>Description <span class="hint">shown in the email</span>
+            <textarea asp-for="Input.Description" rows="2"></textarea></label>
+        <label>PI Vision display URL <span class="hint">open the display in PI Vision and copy the address bar</span>
+            <input asp-for="Input.DisplayUrl" required placeholder="https://pivision/PIVision/#/Displays/12/Unit-3-Overview"></label>
+        <span asp-validation-for="Input.DisplayUrl" class="field-error"></span>
+        <div class="grid3">
+            <label>Start time <input asp-for="Input.StartTime" placeholder="*-24h"></label>
+            <label>End time <input asp-for="Input.EndTime" placeholder="*"></label>
+            <label>Asset <span class="hint">optional AF element path</span><input asp-for="Input.Asset" placeholder="\\AF\Plant\Unit 3"></label>
+        </div>
+        <p class="hint">Times use PI time syntax: <code>*</code> is now, <code>t</code> is midnight today, <code>y</code> is midnight yesterday, <code>*-8h</code> is eight hours ago. Leave both blank to keep the display's saved range.</p>
+        <div class="checks">
+            <label><input asp-for="Input.HideToolbar"> Hide toolbar</label>
+            <label><input asp-for="Input.HideTimebar"> Hide time bar</label>
+        </div>
+        @if (Model.PreviewUrl is not null)
+        {
+            <p class="hint">The capture opens: <a href="@Model.PreviewUrl" target="_blank" rel="noopener"><code>@Model.PreviewUrl</code></a></p>
+        }
+    </fieldset>
+
+    <fieldset>
+        <legend>Output</legend>
+        <div class="grid3">
+            <label>Format <select asp-for="Input.Format" asp-items="Html.GetEnumSelectList<CaptureFormat>()"></select></label>
+            <label>Browser width (px) <input asp-for="Input.ViewportWidth" type="number" min="400" max="7680"></label>
+            <label>Browser height (px) <input asp-for="Input.ViewportHeight" type="number" min="300" max="4320"></label>
+        </div>
+        <p class="hint">Size the browser to fit the whole display. Anything outside it is cut off, just as on screen.</p>
+        <div class="grid3">
+            <label>Settle time (s) <span class="hint">extra wait after loading</span><input asp-for="Input.SettleSeconds" type="number" min="0" max="300"></label>
+            <label>Timeout (s) <input asp-for="Input.TimeoutSeconds" type="number" min="15" max="900"></label>
+            <label class="check-inline"><input asp-for="Input.Landscape"> Landscape PDF page</label>
+        </div>
+        <label>File name <span class="hint">tokens: {name}, {date:yyyyMMdd_HHmm}</span><input asp-for="Input.FileNamePattern"></label>
+    </fieldset>
+
+    <fieldset>
+        <legend>Schedule</legend>
+        <div class="grid2">
+            <label>Cron schedule <span class="hint">blank runs on demand only</span><input asp-for="Input.Cron" placeholder="0 6 * * *"></label>
+            <label>Time zone <select asp-for="Input.TimeZoneId" asp-items="Model.TimeZones"></select></label>
+        </div>
+        <span asp-validation-for="Input.Cron" class="field-error"></span>
+        <p class="hint">Minute, hour, day of month, month, day of week. <code>0 6 * * *</code> runs daily at 06:00. <code>0 6 * * 1-5</code> runs weekdays at 06:00. <code>0 */4 * * *</code> runs every four hours.</p>
+        <label class="check-inline"><input asp-for="Input.Enabled"> Enabled</label>
+    </fieldset>
+
+    <fieldset>
+        <legend>Delivery</legend>
+        <label>Email recipients <span class="hint">separate with ; or new lines</span>
+            <textarea asp-for="Input.EmailRecipients" rows="2"></textarea></label>
+        <span asp-validation-for="Input.EmailRecipients" class="field-error"></span>
+        <div class="grid2">
+            <label>Subject <span class="hint">{date} is replaced</span><input asp-for="Input.EmailSubject" placeholder="@(Model.Input.Name is { Length: > 0 } n ? n : "Report") — {date}"></label>
+            <label>Attach up to (MB) <span class="hint">larger files are sent as a link</span><input asp-for="Input.AttachMaxMb" type="number" min="0" max="25"></label>
+        </div>
+        <label>Shared folder <span class="hint">UNC path the service account can write to</span>
+            <input asp-for="Input.SharePath" placeholder="\\fileserver\reports\Unit 3"></label>
+    </fieldset>
+
+    <div class="buttons">
+        <button type="submit" class="button">Save</button>
+        @if (!Model.IsNew)
+        {
+            <button type="submit" class="button secondary" asp-page-handler="SaveAndRun">Save and run now</button>
+            <button type="submit" class="button danger" asp-page-handler="Delete"
+                    formnovalidate onclick="return confirm('Delete this capture and its run history?')">Delete</button>
+        }
+        <a asp-page="/Index">Cancel</a>
+    </div>
+</form>

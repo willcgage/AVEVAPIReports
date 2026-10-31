@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PiReports.Core/PiReports.Core.csproj" />
+    <Project Path="src/PiReports.Web/PiReports.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PiReports.Tests/PiReports.Tests.csproj" />
+  </Folder>
+</Solution>

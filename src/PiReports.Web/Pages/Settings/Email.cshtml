@@ -1,0 +1,49 @@
+@page
+@model PiReports.Web.Pages.Settings.EmailModel
+@{
+    ViewData["Title"] = "Email settings";
+}
+<h1>Email settings</h1>
+<p class="hint">The SMTP server all captures send through. An internal relay that accepts mail from this server without a password is the simplest setup.</p>
+
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="flash error"></div>
+    <fieldset>
+        <legend>SMTP server</legend>
+        <div class="grid3">
+            <label>Host <input asp-for="Input.Host" required placeholder="smtp.corp.local"></label>
+            <label>Port <input asp-for="Input.Port" type="number" min="1" max="65535"></label>
+            <label>Security <select asp-for="Input.Security" asp-items="Model.SecurityOptions"></select></label>
+        </div>
+        <div class="grid2">
+            <label>Username <span class="hint">blank for anonymous relay</span><input asp-for="Input.Username" autocomplete="off"></label>
+            <label>Password <span class="hint">@(Model.HasPassword ? "saved; leave blank to keep it" : "not set")</span>
+                <input asp-for="NewPassword" type="password" autocomplete="new-password"></label>
+        </div>
+        @if (Model.HasPassword)
+        {
+            <label class="check-inline"><input asp-for="ClearPassword"> Remove the saved password</label>
+        }
+    </fieldset>
+    <fieldset>
+        <legend>Sender</legend>
+        <div class="grid2">
+            <label>From address <input asp-for="Input.FromAddress" required type="email" placeholder="pi-reports@corp.local"></label>
+            <label>From name <input asp-for="Input.FromName"></label>
+        </div>
+    </fieldset>
+    <div class="buttons">
+        <button type="submit" class="button">Save</button>
+    </div>
+</form>
+
+<form method="post" asp-page-handler="Test" class="test-form">
+    <fieldset>
+        <legend>Send a test email</legend>
+        <p class="hint">Uses the saved settings. Save first if you changed anything above.</p>
+        <div class="grid2">
+            <label>To <input asp-for="TestTo" type="email" required></label>
+            <div class="buttons"><button type="submit" class="button secondary">Send test</button></div>
+        </div>
+    </fieldset>
+</form>

@@ -1,0 +1,2 @@
+@model ReportRun
+<span class="status @Model.Status.ToString().ToLowerInvariant()" title="@(Model.Error ?? Model.Warnings)">@Model.Status@(Model.Warnings is not null && Model.Status == RunStatus.Succeeded ? " (warnings)" : "")</span>

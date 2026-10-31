@@ -1,0 +1,40 @@
+@page
+@model PiReports.Web.Pages.Captures.TransferModel
+@{
+    ViewData["Title"] = "Export and import captures";
+}
+<h1>Export and import captures</h1>
+<p class="hint">Move captures between installations, for example from Test to Production. Captures are matched by name: one that already exists here is updated, and a new one is added. Run history and email settings are not included.</p>
+
+<form method="post" asp-page-handler="Export">
+    <fieldset>
+        <legend>Export</legend>
+        @if (Model.Captures.Count == 0)
+        {
+            <p class="empty">No captures to export yet.</p>
+        }
+        else
+        {
+            <p class="hint">Choose captures, or leave all unticked to export everything.</p>
+            @foreach (var c in Model.Captures)
+            {
+                <label class="check-inline"><input type="checkbox" name="ids" value="@c.Id"> @c.Name</label>
+            }
+            <div class="buttons"><button type="submit" class="button">Download JSON</button></div>
+        }
+    </fieldset>
+</form>
+
+<form method="post" asp-page-handler="Import" enctype="multipart/form-data">
+    <fieldset>
+        <legend>Import</legend>
+        <label>Export file <input type="file" name="file" accept=".json,application/json" required></label>
+        <div class="grid2">
+            <label>Change PI Vision server from <span class="hint">optional, e.g. pivision-test.corp.local</span><input name="hostFrom"></label>
+            <label>to <span class="hint">e.g. pivision01.corp.local</span><input name="hostTo"></label>
+        </div>
+        <label class="check-inline"><input type="checkbox" name="importDisabled" value="true" checked> Import as disabled, so nothing runs until I review and enable each capture</label>
+        <p class="hint">Shared folders and recipients come across as they are. Check them before enabling, since they may differ between Test and Production.</p>
+        <div class="buttons"><button type="submit" class="button">Import</button></div>
+    </fieldset>
+</form>
