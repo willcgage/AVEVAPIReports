@@ -16,7 +16,7 @@ PI Reports runs on each PI Vision server as its own IIS application, with its ow
 
 ## The release flow
 
-1. Get a package. Each release is a tag such as `v0.1.0` (or `v0.1.0-test.1` for a prerelease). Pushing the tag makes GitHub Actions run the tests and publish a release with `PiReports-<tag>.zip` attached, on the repository's Releases page. Builds of main also leave the zip under the run's Artifacts. To build one yourself on a workstation with the .NET 10 SDK, run `.\deploy\Build-Package.ps1`, which writes `artifacts\PiReports-<date>.zip`. Servers never need the SDK.
+1. Get a package. On GitHub, open **Releases > Draft a new release**, type a new tag such as `v0.1.0` (or `v0.1.0-test.1` with **Set as a pre-release** ticked), target `main`, and publish. GitHub Actions then runs the tests and attaches `PiReports-<tag>.zip` to that release within a few minutes. Builds of main also leave the zip under the run's Artifacts. To build one yourself on a workstation with the .NET 10 SDK, run `.\deploy\Build-Package.ps1`, which writes `artifacts\PiReports-<date>.zip`. Servers never need the SDK.
 2. Send the DBA `dba\02-pireports-schema.sql` and `dba\03-hangfire-schema.sql` from the package, for both databases, and wait for confirmation (step 2). This matters whenever the release changes the database. The scripts are safe to re-run, so sending them every time is simplest.
 3. Deploy to Test: copy the zip to the Test server, unzip, and run `Deploy-PiReports.ps1 -Environment Test ...`.
 4. Set up or change captures on Test and check the output. Then use **Export / import** to download them as JSON.
