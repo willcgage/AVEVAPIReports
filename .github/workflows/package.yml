@@ -2,12 +2,13 @@ name: Build package
 
 # Builds the deployable zip on every push to main and on demand, so servers
 # never need the .NET SDK. Download it from the run's "Artifacts" section.
-# Pushing a tag such as v0.1.0 or v0.1.0-test.1 also publishes a GitHub
-# release with the zip attached; tags with a hyphen are marked prerelease.
+# Publishing a GitHub release (Releases > Draft a new release, with a tag
+# such as v0.1.0-test.1) also builds the zip and attaches it to that release.
 on:
   push:
     branches: [main]
-    tags: ['v*']
+  release:
+    types: [published]
   pull_request:
   workflow_dispatch:
 
@@ -35,17 +36,15 @@ jobs:
           path: artifacts/*.zip
           retention-days: 30
 
-      - name: Publish release
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Attach zip to release
+        if: github.event_name == 'release'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $tag = '${{ github.ref_name }}'
+          $tag = '${{ github.event.release.tag_name }}'
           $zip = Get-ChildItem artifacts/*.zip | Select-Object -First 1
           $named = Join-Path artifacts "PiReports-$tag.zip"
           Copy-Item $zip.FullName $named
-          $flags = @('--title', $tag, '--generate-notes', '--verify-tag')
-          if ($tag -like '*-*') { $flags += '--prerelease' }
-          gh release create $tag $named @flags
-          if ($LASTEXITCODE -ne 0) { throw "gh release create failed" }
+          gh release upload $tag $named --clobber
+          if ($LASTEXITCODE -ne 0) { throw "gh release upload failed" }
