@@ -29,7 +29,8 @@ try {
     dotnet ef migrations script --idempotent -p src/PiReports.Core -s src/PiReports.Web -o docs/dba/02-pireports-schema.sql
     if ($LASTEXITCODE -ne 0) { throw 'Generating the schema script failed.' }
 
-    dotnet publish src/PiReports.Web --configuration Release --output $out
+    # Windows-only, framework-dependent: the server needs the .NET 10 Hosting Bundle, not the SDK.
+    dotnet publish src/PiReports.Web --configuration Release --runtime win-x64 --self-contained false --output $out
     if ($LASTEXITCODE -ne 0) { throw 'Publish failed.' }
 
     # The deploy script and DBA scripts travel with the package.
